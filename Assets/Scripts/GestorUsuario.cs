@@ -2,6 +2,8 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Windows;
+using System.Collections;
+using UnityEngine.UI;
 
 
 public class GestorUsuario : MonoBehaviour
@@ -9,6 +11,9 @@ public class GestorUsuario : MonoBehaviour
     public TMP_InputField inputNombre;
     public TMP_InputField inputEdad;
     public TMP_InputField inputID;
+
+    public Slider sliderEliminar;
+    public TMP_Text textoCuentaAtras;
 
     public TMP_Text textoResultado;
 
@@ -124,5 +129,61 @@ public class GestorUsuario : MonoBehaviour
                     usuario.edad + " años\n";
             }
         }
+    }
+
+    public void EliminarUsuario()
+    {
+        int id;
+
+        if (!int.TryParse(inputID.text, out id))
+        {
+            textoResultado.text = "Introduce un ID válido";
+            return;
+        }
+
+        foreach (Usuario usuario in usuarios)
+        {
+            if (usuario.id == id)
+            {
+                StartCoroutine(EliminarConEspera(usuario));
+                return;
+            }
+        }
+
+        textoResultado.text = "No existe usuario con edse ID";
+    }
+
+    IEnumerator EliminarConEspera(Usuario usuario)
+    {
+        sliderEliminar.gameObject.SetActive(true);
+        textoCuentaAtras.gameObject.SetActive(true);
+
+        sliderEliminar.minValue = 0;
+        sliderEliminar.maxValue = 3;
+
+        float tiempo = 0;
+
+        while (tiempo < 3)
+        {
+            tiempo += Time.deltaTime;
+
+            sliderEliminar.value = tiempo;
+
+            textoCuentaAtras.text =
+                "Eliminando en " +
+                Mathf.CeilToInt(3 - tiempo) +
+                "...";
+
+            yield return null;
+        }
+
+        usuarios.Remove(usuario);
+
+        sliderEliminar.gameObject.SetActive(false);
+        textoCuentaAtras.gameObject.SetActive(false);
+
+        textoResultado.text = "Usuario eliminado";
+
+        MostrarTodos();
     }
 }
